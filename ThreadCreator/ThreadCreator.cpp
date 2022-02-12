@@ -120,5 +120,7 @@ int main()
         std::cout << parametr->array[i] << " ";
     }
 
+    delete[] array;
+    delete[] parametr;
     return 0;
 }

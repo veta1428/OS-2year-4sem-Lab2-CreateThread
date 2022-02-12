@@ -2,20 +2,15 @@
 #include <windows.h>
 
 typedef struct Array {
-    int size;
-    int* array;
-    int max_index;
-    int min_index;
-    double average;
-    /*~Array() {
-        delete[] array;
-        array = NULL;
-        std::cout << "destructor worked";
-    }*/
-}*PARRAY;
+    int size = 0;
+    int* array = NULL;
+    int max_index = 0;
+    int min_index = 0;
+    double average = 0;
+};
 
 DWORD WINAPI FindMinMaxAndPrint(LPVOID param) {
-    PARRAY array = (PARRAY)param;
+    Array* array = (Array*)(param);
     int max = array->array[0];
     int min = array->array[0];
 
@@ -43,7 +38,7 @@ DWORD WINAPI FindMinMaxAndPrint(LPVOID param) {
 }
 
 DWORD WINAPI FindAverageAndPrint(LPVOID param) {
-    PARRAY array = (PARRAY)param;
+    Array* array = (Array*)param;
     
     double sum = 0;
 
@@ -65,7 +60,6 @@ int main()
     std::cin >> numberAmount;
     std::cout << "Now enter array elements.\n";
 
-    //will be deallocated in a struct
     int* array = new int[numberAmount];
 
     DWORD max_min_thread_id;
@@ -75,7 +69,7 @@ int main()
         std::cin >> array[i];
     }
 
-    PARRAY parametr = (PARRAY)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(PARRAY));
+    Array* parametr = new Array;
     parametr->size = numberAmount;
     parametr->array = array;
 
@@ -83,7 +77,7 @@ int main()
         NULL,                   // default security attributes
         0,                      // use default stack size  
         FindMinMaxAndPrint,       // thread function name
-        (PARRAY)parametr,          // argument to thread function 
+        (Array*)parametr,          // argument to thread function 
         0,                      // use default creation flags 
         &max_min_thread_id);   // returns the thread identifier 
 
@@ -104,7 +98,7 @@ int main()
         NULL,                   // default security attributes
         0,                      // use default stack size  
         FindAverageAndPrint,       // thread function name
-        (PARRAY)parametr,          // argument to thread function 
+        (Array*)parametr,          // argument to thread function 
         0,                      // use default creation flags 
         &average_thread_id);   // returns the thread identifier 
 
@@ -119,12 +113,12 @@ int main()
     CloseHandle(averageThreadHandle);
 
     parametr->array[parametr->max_index] = parametr->average;
-    parametr->array[parametr->max_index] = parametr->average;
+    parametr->array[parametr->min_index] = parametr->average;
 
     for (size_t i = 0; i < parametr->size; i++)
     {
         std::cout << parametr->array[i] << " ";
     }
-    //HeapFree(GetProcessHeap(), 0, parametr);
+
     return 0;
 }

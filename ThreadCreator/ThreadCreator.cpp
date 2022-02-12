@@ -1,5 +1,6 @@
 #include <iostream>
 #include <windows.h>
+#include <mutex>
 
 typedef struct Array {
     int size = 0;
@@ -8,6 +9,8 @@ typedef struct Array {
     int min_index = 0;
     double average = 0;
 };
+
+std::mutex mutex;
 
 DWORD WINAPI FindMinMaxAndPrint(LPVOID param) {
     Array* array = (Array*)(param);
@@ -33,7 +36,10 @@ DWORD WINAPI FindMinMaxAndPrint(LPVOID param) {
         Sleep(7);
     }
 
+    mutex.lock();
     std::cout << "Min: " << min << "\nMax: " << max << std::endl;
+    mutex.unlock();
+
     return 0;
 }
 
@@ -49,7 +55,11 @@ DWORD WINAPI FindAverageAndPrint(LPVOID param) {
     }
     double average = sum / array->size;
     array->average = average;
+
+    mutex.lock();
     std::cout << "Average: " << average << std::endl;
+    mutex.unlock();
+
     return 0;
 }
 
@@ -84,13 +94,7 @@ int main()
     if (min_maxThreadHandle == NULL) {
         std::cerr << "Min max creation failed";
         return 1;
-    }
-
-    WaitForSingleObject(min_maxThreadHandle, INFINITE);
-
-    CloseHandle(min_maxThreadHandle);
-
-    
+    } 
 
     DWORD average_thread_id;
 
@@ -109,8 +113,10 @@ int main()
     }
 
     WaitForSingleObject(averageThreadHandle, INFINITE);
+    WaitForSingleObject(min_maxThreadHandle, INFINITE);
 
     CloseHandle(averageThreadHandle);
+    CloseHandle(min_maxThreadHandle);
 
     parametr->array[parametr->max_index] = parametr->average;
     parametr->array[parametr->min_index] = parametr->average;

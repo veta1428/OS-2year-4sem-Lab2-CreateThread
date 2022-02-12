@@ -121,6 +121,6 @@ int main()
     }
 
     delete[] array;
-    delete[] parametr;
+    delete parametr;
     return 0;
 }
